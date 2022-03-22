@@ -19,17 +19,20 @@ download_distfile_safe() {
 
     eexec curl $CURL_OPTS \
         -o "$file" "$url" \
-        -o "$file.DIGESTS.asc" "$url.DIGESTS.asc"
+        -o "$file.asc" "$url.asc" \
+        -o "$file.DIGESTS" "$url.DIGESTS"
 
     for hash in sha512 whirlpool; do
-        expected_hash="$(grep -i "$hash" -A 1 < "$file.DIGESTS.asc" \
+        expected_hash="$(grep -i "$hash" -A 1 < "$file.DIGESTS" \
             | grep -v '^[#-]' | grep -v '\.CONTENTS\.' | cut -d" " -f1)"
 
         if [ -n "$expected_hash" ]; then
             einfo "Verifying $hash hash..."
+            echo $expected_hash
 
             actual_hash="$(openssl dgst -r -$hash "$file" | cut -d" " -f1)"
-
+             
+            echo $actual_hash
             if [ "$expected_hash" != "$actual_hash" ]; then
                 eerror "$hash hash verification failed."
                 eerror "Expected $hash: $expected_hash"
@@ -50,6 +53,6 @@ download_distfile_safe() {
 
     eexec gpg --keyserver $GENTOO_GPG_SERVER --recv-keys $GENTOO_GPG_KEYS
 
-    eexec gpg --verify "$file.DIGESTS.asc" \
+    eexec gpg --verify "$file.asc" \
         || edie "GPG signature verification failed."
 }

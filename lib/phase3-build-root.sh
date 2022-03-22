@@ -202,6 +202,7 @@ fi
 ################################################################################
 
 einfo "Configuring network..."
+eexec emerge -1 $EMERGE_OPTS "net-misc/dhcpcd"
 
 if eoff "$GENTOO_SYSTEMD"; then
     eexec ln -s /etc/init.d/net.lo /etc/init.d/net.eth0
